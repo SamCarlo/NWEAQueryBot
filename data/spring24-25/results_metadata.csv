@@ -1,0 +1,111 @@
+﻿TermName,DistrictName,District_StateID,SchoolName,School_StateID,StudentID,Student_StateID,Subject,Course,GrowthMeasureYN,NormsReferenceData,WISelectedAYFall,WISelectedAYWinter,WISelectedAYSpring,WIPreviousAYFall,WIPreviousAYWinter,WIPreviousAYSpring,TestType,TestName,TestID,TestStartDate,TestStartTime,TestDurationMinutes,TestRITScore,TestStandardError,TestPercentile,AchievementQuintile,PercentCorrect,RapidGuessingPercentage,FallToFallProjectedGrowth,FalltoFallObservedGrowth,FalltoFallObservedGrowthSE,FalltoFallMetProjectedGrowth,FalltoFallConditionalGrowthIndex,FalltoFallConditionalGrowthPercentile,FallToFallGrowthQuintile,FalltoWinter: . . .,,,,,,,FalltoSpring: . . .,,,,,,,WintertoWinter: . . .,,,,,,,WintertoSpring: . . .,,,,,,,SpringtoSpring: . . .,,,,,,,LexileScore,LexileMin,LexileMax,QuantileScore,QuantileMin,QuantileMax,Goal1Name,Goal1RitScore,Goal1StdErr,Goal1Range,Goal1Adjective,"Goal2-8: Name, RitScore, StdErr, Range, Adjective",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,TypicalFallToFallGrowth,TypicalFallToWinterGrowth,TypicalFallToSpringGrowth,TypicalWintertoWinterGrowth,TypicalWintertoSpringGrowth,TypicalSpringToSpringGrowth,ProjectedProficiencyStudy1,ProjectedProficiencyLevel1,ProjectedProficiencyStudy2,ProjectedProficiencyLevel2,ProjectedProficiencyStudy3,ProjectedProficiencyLevel3,ProjectedProficiency…4 to 10,,,,,,,,,,,,,
+Term chosen for the export.,Name defined in your MAP preferences. ,District code you have set in MAP preferences.,"Name defined in your MAP preferences. If a student has multiple schools, this is the student's School of Record.",State code for the school associated with the student.,ID your district provided in the student's MAP profile.,ID your state uses to identify the student.,"The test content area.  
+","Specific content and RIT scale. 
+","Indicates which test result counts toward a student's growth measure, marked TRUE. If a student has multiple results for the same test and term, then the other results will appear FALSE. ","Indicates which NWEA norms study applies to cacluations like projected growth. For most tests, norms are 2020. The 2015 norms option was removed December 2023. Other tests utilize ""USER"" norms. In a few cases, tests have no related norms and will appear blank here.","Weeks of Instruction (WI) before testing in the fall term of the same academic year (AY) as the term selected at export. The WI number comes from the Manage Terms settings within MAP.
+--Value is blank if the student did not have a valid test event in fall.","Weeks of Instruction (WI) before testing in the winter term of the same academic year (AY) as the term selected at export. The WI number comes from the Manage Terms settings within MAP.
+--Value is blank if the student did not have a valid test event in winter.","Weeks of Instruction (WI) before testing in the spring term of the same academic year (AY) as the term selected at export. The WI number comes from the Manage Terms settings within MAP.
+--Value is blank if the student did not have a valid test event in spring.","Weeks of Instruction (WI) before testing in the fall term of the academic year (AY) previous to the term selected at export. The WI number comes from the Manage Terms settings within MAP.
+--Value is blank if the student did not have a valid test event in fall.","Weeks of Instruction (WI) before testing in the winter term of the academic year (AY) previous to the term selected at export. The WI number comes from the Manage Terms settings within MAP.
+--Value is blank if the student did not have a valid test event in winter.","Weeks of Instruction (WI) before testing in the spring term of the academic year (AY) previous to the term selected at export. The WI number comes from the Manage Terms settings within MAP.
+--Value is blank if the student did not have a valid test event in spring.","Description of the test type (either ""Survey with Goals"" or ""Survey"").",Full name of the test.,Unique identifier for the test event. This ID also appears in the AccommodationAssignment.csv file so you can connect that data to this test event.,"Date the test was started, as recorded by the workstation where the test was taken.",Time the test was started with the format hh:mm:ss. ,Total testing time.,"Overall RIT score of the test. Appears as a whole, integer number.",RIT score variance.,"Student ranking, based on the RIT score of this test as compared to the NWEA norm study.","Up to 20th percentile = “Low""
+21st to 40th percentile = “LoAvg""
+41st to 60th percentile = “Avg""
+61st to 80th percentile = ""HiAvg""
+81st percentile and above = “High""
+
+If the TestPercentile is blank, this field will also be blank.","Number of items answered correctly divided by the total number of items in the test, multiplied by 100. Items that are not scored, such as field test and familiarity items, are not included in the calculation. This field provides an additional reference point for those assessing the confidence level of a test event's RIT score. When approximately 40% to 60% of items are answered correctly, the student’s responses are consistent with the adaptive test model and the level of confidence in the validity of the RIT score is increased. Used in conjunction with the test duration and standard error of measure, the percent correct can identify test event scores that may be suspect. A test event with too many items answered correctly (for example, more than 60%) can be an indicator that the test was not well targeted for the student’s performance level. In other words, the items presented were not sufficiently appropriate for the student’s level of proficiency (generally too easy). A test event with too few items answered correctly can be an indicator that the student was not fully engaged. For example, the student may have given random answers to questions or may have purposely answered questions incorrectly.","Percentage of questions the student completed with rapid guesses, which are well below the average response time measured by NWEA for each test question.","Projected RIT growth from previous academic year fall term to the fall term chosen at export. Based on previous fall term RIT score and weeks of instruction.
+
+--Value is only available if the selected term for export is fall and if growth projection norms exist.
+--Value is blank if the MAP test type is ""Survey.""","Actual growth from previous academic year fall term to the fall term chosen at export.
+
+--Value is only available if selected term for export is fall AND if valid RIT score exists for previous academic year fall term.
+--Value is blank if the MAP test type is ""Survey.""","Standard Error associated with calculation for FalltoFallObservedGrowth.
+
+--Value is only available if selected term is fall AND FalltoFallObservedGrowth has a value.
+--Value is blank if the MAP test type is ""Survey.""","Yes = Student met the projected growth from the previous academic year fall term to  the fall term chosen at export.
+No = Growth projection not met. 
+Asterisk (*) = Observed Growth Standard Error (SE) could be large enough to put the outcome in question, so evaluate in combination with other points of data.
+
+--Value is only available if selected term is fall AND FalltoFallObservedGrowth has a value.
+--Value is blank if the MAP test type is ""Survey.""","Calculation that enables you to compare student growth. Measures growth from the previous academic year fall term to  the fall term chosen at export. It incorporates:
+--weeks of instruction before testing
+--how high students scored in the first term
+
+A value of zero (0) corresponds to the mean (typical) growth, indicating that growth exactly matched projections.
+
+--Value is only available if selected term is fall AND FalltoFallObservedGrowth has a value.
+--Value is blank if the MAP test type is ""Survey.""","Translates the Conditional Growth Index to national percentile rankings for growth. Measures growth from the previous academic year fall term to the fall term chosen at export. 
+--Value is only available if selected term is fall AND FalltoFallObservedGrowth has a value.
+--Value is blank if the MAP test type is ""Survey.""","Indicates a quintile for the FalltoFallConditionalGrowthPercentile:
+Up to 20th percentile = “Low""
+21st to 40th percentile = “LoAvg""
+41st to 60th percentile = “Avg""
+61st to 80th percentile = ""HiAvg""
+81st percentile and above = “High""
+
+If the FalltoFallConditionalGrowthPercentile is blank, this field will also be blank.","Same six fields as for FalltoFall, but comparing fall to winter. See the prior columns for descriptions:
+
+FalltoWinterProjectedGrowth
+FalltoWinterObservedGrowth
+FalltoWinterObservedGrowthSE
+FalltoWinterMetProjectedGrowth
+FalltoWinterConditionalGrowthIndex
+FalltoWinterConditionalGrowthPercentile
+FalltoWinterGrowthQuintile",,,,,,,"Same six fields as for FalltoFall, but comparing fall to spring. See the prior columns for descriptions:
+
+FalltoSpringProjectedGrowth
+FalltoSpringObservedGrowth
+FalltoSpringObservedGrowthSE
+FalltoSpringMetProjectedGrowth
+FalltoSpringConditionalGrowthIndex
+FalltoSpringConditionalGrowthPercentile
+FalltoSpringGrowthQuintile",,,,,,,"Same six fields as for FalltoFall, but comparing winter to winter. See the prior columns for descriptions:
+
+WintertoWinterProjectedGrowth
+WintertoWinterObservedGrowth
+WintertoWinterObservedGrowthSE
+WintertoWinterMetProjectedGrowth
+WintertoWinterConditionalGrowthIndex
+WintertoWinterConditionalGrowthPercentile
+WintertoWinterGrowthQuintile",,,,,,,"Same six fields as for FalltoFall, but comparing winter to spring. See the prior columns for descriptions:
+
+WintertoSpringProjectedGrowth
+WintertoSpringObservedGrowth
+WintertoSpringObservedGrowthSE
+WintertoSpringMetProjectedGrowth
+WintertoSpringConditionalGrowthIndex
+WintertoSpringConditionalGrowthPercentile
+WintertoSpringGrowthQuintile",,,,,,,"Same six fields as for FalltoFall, but comparing spring to spring. See the prior columns for descriptions:
+
+SpringtoSpringProjectedGrowth
+SpringtoSpringObservedGrowth
+SpringtoSpringObservedGrowthSE
+SpringtoSpringMetProjectedGrowth
+SpringtoSpringConditionalGrowthIndex
+SpringtoSpringConditionalGrowthPercentile
+SpringtoSpringGrowthQuintile",,,,,,,"Available only for Reading tests. Estimated score within the range of Lexile® reading scores resulting from a correlation to NWEA’s RIT score. Lexile® and MetaMetrics® are trademarks of MetaMetrics, Inc., and are registered in the United States and abroad. 
+(Previously named RITtoReadingScore.)","Lower end of the range.
+(Previously named RITtoReadingMin.)","Upper end of the range.
+(Previously named RITtoReadingMax.)","Available only for Math K-12 tests. Estimated score within the range of Quantile® mathematics  scores resulting from a correlation to NWEA’s RIT score. Quantile® and MetaMetrics® are trademarks of MetaMetrics, Inc., and are registered in the United States and abroad. ",Lower end of the range.,Upper end of the range.,"Name of first goal section of the test. Value is blank if the MAP test type is ""Survey.""","RIT score for the first goal section of the test. Value is rounded to whole, integer value.",Standard error for first goal section of the test.,"RIT range based on the standard error and RIT score.
+*–* indicates that no value range computed.","Goal adjective related to the first goal score. This is defined using the goal score percentile as it relates to a norm set and its associative cut sheet. Values: 
+Low (percentile <= 20)
+LoAvg (percentile > 20 to <= 40)
+Avg (percentile > 40 to <= 60)
+HiAvg (percentile > 60 to <= 80)
+High (percentile > 80)
+* (goal adjective could not be computed)",Same five fields as Goal 1. See the prior 5 columns.,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,"Projected RIT growth from the fall term chosen at export to the next academic year fall term.
+--Value is only available if the selected term for export is fall and if growth projection norms exist.
+--Value is blank if the MAP test type is ""Survey.""","Projected RIT growth from the fall term chosen at export to the next winter term.
+--Value is only available if the selected term for export is fall and if growth projection norms exist.
+--Value is blank if the MAP test type is ""Survey.""","Projected RIT growth from the fall term chosen at export to the next spring term.
+--Value is only available if the selected term for export is fall and if growth projection norms exist.
+--Value is blank if the MAP test type is ""Survey.""","Projected RIT growth from the winter term chosen at export to the next academic year winter term.
+--Value is only available if the selected term for export is winter and if growth projection norms exist.
+--Value is blank if the MAP test type is ""Survey.""","Projected RIT growth from the winter term chosen at export to the next spring term.
+--Value is only available if the selected term for export is winter and if growth projection norms exist.
+--Value is blank if the MAP test type is ""Survey.""","Projected RIT growth from the spring term chosen at export to the next academic year spring term.
+--Value is only available if the selected term for export is spring and if growth projection norms exist.
+--Value is blank if the MAP test type is ""Survey.""","Name of the first NWEA linking study associated with the MAP test taken. 
+Linking studies form the basis for projected proficiency on separate assessments, such as your state summative test. 
+--Value is blank if the MAP test type is ""Survey.""","Projected proficiency level, or category, such as Unsatisfactory, Partially Proficient, and so on.
+Corresponds to the first linking study. ","Name of the second NWEA linking study, if available. ","Projected proficiency level, or category, that corresponds to the second linking study. ","Name of the third NWEA linking study, if available. ","Projected proficiency level, or category, that corresponds to the third linking study. ","If there are additional proficiency projections applicable to the MAP test, they will appear at the end of the export.",,,,,,,,,,,,,
