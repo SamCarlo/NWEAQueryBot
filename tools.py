@@ -1,3 +1,17 @@
+# Holds declarations and functions for query bot
+import sqlite3
+import config
+import json
+import re
+
+###########################################
+## Tool declarations and local functions ##
+###########################################
+
+## Purpose: provide functions ready for dispatch by query agent.
+## Author: Samuel Carlos
+## Date: 7/15/25
+
 # Tools for OpenAI agents
 openai_tools = [
             {
