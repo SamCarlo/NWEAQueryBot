@@ -6,9 +6,13 @@
 ### Main purpose
 This chat bot allows school faculty to perform high- to mid-level data analyses instantly using natural language, saving hours of work each year of manually creating reports. 
 
-Background: NWEA is a ubiquitous 3rd party formative testing service for K-12 schools. It allows teachers to trends in student learning, check if they are on track with national standards, and get a long-term view of their attained knowledge across many years. 
+###Background
 
-Motivation for this app: While NWEA's web tool "MAP" provides many data dashboards for teachers to explore, exploration of the website requires training, forethought, and development of data analysis skill. This tool can take vague prompts like "What should I teach in my class this year?" and end with a highly specified set of curriculum goals based on an analysis of student learning, guiding the user along the way about how to make their data analysis goals more specific. 
+NWEA is a ubiquitous 3rd party formative testing service for K-12 schools. It allows teachers to trends in student learning, check if they are on track with national standards, and get a long-term view of their attained knowledge across many years. 
+
+###Motivation for this app
+
+ While NWEA's web tool "MAP" provides many data dashboards for teachers to explore, exploration of the website requires training, forethought, and development of data analysis skill. This tool can take vague prompts like "What should I teach in my class this year?" and end with a highly specified set of curriculum goals based on an analysis of student learning, guiding the user along the way about how to make their data analysis goals more specific. 
 
 ## Features
 ### Create a SQLite3 database from downloaded .csv
