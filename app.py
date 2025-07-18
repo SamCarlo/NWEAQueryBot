@@ -3,14 +3,14 @@
 ## Date: 7/15/25
 ## Author: Samuel Carlos
 
-import QueryAgent
+import queryagent
 import json
 import streamlit as st
 import time
 
 ## Persist via st.session_state
 if "agent" not in st.session_state:
-    st.session_state.agent = QueryAgent.QueryAgent()
+    st.session_state.agent = queryagent.QueryAgent()
 if "input_messages" not in st.session_state:
     st.session_state.input_messages = []
 
