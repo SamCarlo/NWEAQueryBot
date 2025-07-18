@@ -1,4 +1,8 @@
 ## Implements QueryAgent capabilities with OpenAI's API.
+## Holds state: ai messages, user messages, and sql results.
+## Accepts user input
+## Drives a chat loop for sqlite3 querying
+
 # Date: 7/14/25
 # Author: Samuel Carlos
 
@@ -8,8 +12,7 @@ import os
 import dotenv
 import config
 from openai import OpenAI
-import re
-
+import tools
 
 ### Agent ###
 # States: 
@@ -25,64 +28,106 @@ class QueryAgent:
         api_key = os.getenv("OPENAI_API_KEY")
         self.client = OpenAI(api_key=api_key)
 
-        ### CHAT HISTORY ###
-        self.previous_id = None
+        ### PROMPT ###
+        self.instructions = (
+            "SYSTEM INSTRUCTIONS:" \
+            "You have access to a sql database on one school year's worth of " \
+            "standardized testing data. School administrators will need your help " \
+            "to gain insights on that data because they aren't data analysts. " \
+            "Start the conversation by helping the " \
+            "user to set a clear goal for the analysis. Then, start drilling into " \
+            "the database by using the functions available to you. Use the info gathered " \
+            "to create a clear " \
+            "and descriptive answer to the agreed upon goal."\
+            "The names in the database are redacted, so "\
+            "you will need to use the template_response to de-anonymize names."
+            "Format lists of data as tables whenever appropriate."
+            "Use double line breaks wherever line breaks are appropriate."
+            )
 
-        ### FUNCTION CALL RESPONSE ###
-        self.sql_response = None
-
-        ### FUNCTION CALL HISTORY ###
-        self.sql_requests_and_responses = []
+        ### Client configuration ###
+        self.my_config = {
+            "model": "o4-mini",
+            "instructions": self.instructions,
+            "parallel_tool_calls": False,
+            "temperature": 1.0,
+            "tools": tools.openai_tools,
+            "tool_choice": "auto",
+            "reasoning": {"effort": "medium"},
+        }
 
         ### PARAMS FROM AI ###
-        # Accessible as response.output[0].arguments IF response.output[0].type == "function_call"
+        # Accessible as response.output[n].arguments
         self.params = {}
 
-        ### TOOLS ###
-        self.tools = config.openai_tools
-        
-        ### PROMPT ###
-        self.instructions = """         
-        SYSTEM INSTRUCTIONS
-        For all user questions, follow this flowchart of actions
-        1) First, you must get the schema of the database with get_schema. 
-        2) Next, you must use get_table to read the descriptions of fields in the metadata tables for full context on the database.
-        3) Consider asking the user for a clarifying question before moving onto database querying, using your new knowledge of the database to help guide the user prompt.
-        4) Examine your function options. Choose one and return the function call if appropriate.
-        5) Examine the results of the function call.
-        6) Repeat steps 3 and 4 until a narrative response is appropriate.
-        7) If asked to list names, use hashed ID's in place of names and pass your final narrative response to.
-        8) If your narrative answer includes hashed values, you MUST use the template_response function call. 
-        9) Be concise and completely true to the data in your narrative response. Explain where your answers came from in the database.
-        \n
-        """ 
+        # Accessible as response.output[n].text
+        self.output_text = ""
+
+        #Store previous id from a response
+        self.previous_id = None
+
+    
     ### END OF __INIT__ ###
 
     #############################
     ### Send new chat message ###
     #############################
 
-    # Iniitalizes response maker
-    # Updates state: self.previous_id
     def send_chat_message(self, input):
-        print("IN SEND MESSAGE")
-        print(f"Previous id = {self.previous_id}")
+        print("In sent_chat_message")
+        ## Add input text to the configuration for responses.create()
+        self.my_config["input"] = input
+
+        ### Add dummy function call to satiate model
+        #func_call_found = False
+        #for msg in input:
+        #    for key, value in msg.items():
+        #        if key == "function_call_output":
+        #            func_call_found = True
+        #            continue
+        #if func_call_found == False:
+        #    # dodge 'no tool output' error by forcing no tool call.
+        #    self.my_config["tool_choice"] = "none" 
+
+        ## Check if previous context exists
         if self.previous_id is None:
-            response = self.client.responses.create(
-                model="gpt-4",
-                instructions=self.instructions,
-                input=[{"role": "user", "content": input}],
-                tools=self.tools
-            )
+            print("No context yet. Creating response.")
+            response = self.client.responses.create(**self.my_config)
+            self.previous_id = response.id
         else:
-            response = self.client.responses.create(
-            model="gpt-4",
-            instructions=self.instructions,
-            previous_response_id=self.previous_id,
-            input=[{"role": "user", "content": input}],
-            tools=self.tools,
-        )
+            #print(f"Context provided. {self.previous_id}")
+            #self.my_config["previous_response_id"] = self.previous_id
+            response = self.client.responses.create(**self.my_config)
+            self.previous_id = response.id
+        print("QueryBot response created. Returning to UI.")
         return response
+    
+    ##########################
+    ## Dispatch Switchboard ##
+    ##########################
+    # Call only when response.output[-1].type == "function_call"
+    # param "name" = the function call name
+    # param "arg" = the function call argument
+    # return = the database's response, cleaned by the local functions already.
+    def dispatch(self, name, arg=None):
+        print("IN DISPATCH")
+        if name == "get_schema":
+            sql_response = tools.get_schema(db_path=config.anon_db_path)
+        elif name == "get_table_info":
+            print("Chose get_table_info")
+            print(f"Args: {arg}")
+            sql_response = tools.get_table_info(db_path=config.anon_db_path, table_id=arg)
+        elif name == "sql_query":
+            print("Chose sql_query")
+            print(f"Args: {arg}")
+            sql_response = tools.sql_query(db_path=config.anon_db_path, query=arg)
+        elif name == "template_response":
+            print("Chose template_response")
+            print(f"Args: {arg}")
+            sql_response = tools.template_response(encoded_response=arg)
+
+        return sql_response
+
 
 
 
