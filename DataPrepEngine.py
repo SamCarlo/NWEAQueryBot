@@ -70,7 +70,8 @@ class DataPrepEngine:
         for path in self.csv_paths:
             print(f"to_df() : Reading {path} into a DataFrame...")
             self._df = pd.read_csv(path)
-            self._df = self._df.dropna(how='all') # All cols must be NaN to drop them. 
+            self._df = self._df.dropna(how='all') # All rows must be NaN to drop them. 
+            self._df = self._df.dropna(axis=1, how="all") # Drop all cols that are only null.
 
             # Determine fileType type based on the fileType name
             if "AssessmentResults" in path:

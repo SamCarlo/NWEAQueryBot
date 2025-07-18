@@ -33,8 +33,8 @@ openai_tools = [
             },
             {
                 "type": "function",
-                "name": "get_table",
-                "description": "Use this function to get a full sql table from the db.",
+                "name": "get_table_info",
+                "description": "Use this function to get table info from a table in the db.",
                 "parameters": {
                     "type": "object",
                     "properties": {
@@ -86,10 +86,11 @@ openai_tools = [
                 "parameters": {
                     "type": "object",
                     "properties": {
-                        "final_response": {
+                        "encoded_response": {
                             "type": "string",
                             "description": (
-                                "Your final response that includes the literal hashed value(s) in context, as if those values are names. "
+                                "Your final narrative response to the user's question about people, "
+                                "except it includes the literal hashed value(s) in context, as if those values are names. "
                                 "Wrap those values in double curly braces, like this: {s{hash value}}. "
                                 "As you can see, you must include a letter s or t between the first pair "
                                 "of curly braces to indicate whether the person is a teacher or student. "
@@ -100,7 +101,7 @@ openai_tools = [
                             )
                         }
                     },
-                    "required": ["final_response"],
+                    "required": ["encoded_response"],
                     "additionalProperties": False
                 },
                 "strict": True
@@ -112,20 +113,20 @@ openai_tools = [
 ### DECLARED FUNCTIONS ###
 ##########################
 # Each run of these functions must update:                
-# 1. self.previous_id = response.id (responsibility of app)
-# 2. self.params = response.output[0].parameters (responsibility of app)
-# 3. self.sql_response = <cleaned result of query> (done by these functions)
-# 4. self.sql_requests_and_responses = [function call name, params, sql_response] (responsibility of app)
+# 1. agent.previous_id = response.id (responsibility of app)
+# 2. agent.params = response.output[0].parameters (responsibility of app)
+# 3. agent.sql_response = <cleaned result of query> (done by these functions)
+# 4. agent.sql_requests_and_responses = [function call name, params, sql_response] (responsibility of app)
 
 ##################
 ### get_schema ###
 ##################
-def get_schema(self):
-    conn = sqlite3.connect(config.anon_db_path)
+def get_schema(db_path: str) -> str:
+    conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
     schema = cursor.execute("SELECT sql FROM sqlite_master WHERE type IN ('table', 'view')").fetchall()
     #print(sql_response)
-    cleaned_response = []
+    _digest_response = []
     for (sql,) in schema: ## This syntax unpacks tuples
         if sql: ## Skip if None (some rows in sqlite_master can have NULL)
             clean_schema = (
@@ -134,65 +135,54 @@ def get_schema(self):
                 .replace("\\", "") 
                 .strip()
             )
-            cleaned_response.append(clean_schema)
-            self.sql_response = "\n\n".join(cleaned_response)
+            _digest_response.append(clean_schema)
+            sql_response = "\n\n".join(_digest_response)
     conn.close()
-    if self.api_response is None:
+    if sql_response is None:
         raise ValueError("Could not get the schema from the SQL connection.")
-    
-#################    
-### get_table ###
-#################
-def get_table(self):
-    print("IN GET_TABLE")
-    conn = sqlite3.connect(config.anon_db_path)
-    cursor = conn.cursor()
-    if 'table_id' not in self.params:
-        print("Failed to provide a table_id param.")
-        raise ValueError("Missing required parameter table_id.")
     else:
-        ai_table_id = self.params["table_id"]
-        print(f"getting table {ai_table_id}")
+        return sql_response
     
-    # Store API response for the chatbot
-    self.api_response = cursor.execute(
-        f'SELECT * FROM "{ai_table_id}";'
-    ).fetchall()
-    self.api_response = str(self.api_response)
-    print(f"Successfully retrieved: \n\n {self.api_response}")
+######################   
+### get_table_info ###
+######################
+def get_table_info(db_path, table_id):
+    print("IN get_table_info_INFO")
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
+
     # Prepare shorter response for backend details
-    print("Getting PRAGMA info for tidy appending to log")
-    cursor.execute(f"PRAGMA table_info('{ai_table_id}')")
+    print("Getting PRAGMA info for tidy appending to log...")
+    cursor.execute(f"PRAGMA table_info('{table_id}')")
     columns = [row[1] for row in cursor.fetchall()]
-    columns_str = ", ".join(columns)
-    
-    print("Closing SQL connection")
+    sql_response = ", ".join(columns)
+
     conn.close()
+
+    return sql_response
 
 #################
 ### sql_query ###
 #################
-def sql_query(self):
-    conn = sqlite3.connect(config.anon_db_path)
+def sql_query(db_path: str, query: str) -> str:
+    conn = sqlite3.connect(db_path)
     conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
     try:
-        # Make the genai-created query one line
-        cleaned_query = (
-                self.params["query"]
-                .replace("\\n", " ")
-                .replace("\n", "")
-                .replace("\\", "")
-                .strip()
-            )
+
         # Send to SQLite db as function
-        print(f"cleaned query: {cleaned_query}")
-        self.api_response = cursor.execute(cleaned_query).fetchall()
-        if self.api_response is None:
-            self.api_response = "NONE - try again"
-        elif isinstance(self.api_response, list):
+        print(f"cleaned query: {query}")
+        sql_response = cursor.execute(query).fetchall()
+        conn.close()
+
+        if sql_response is None:
+            sql_response = "That query didn't work. Try again with a different one."
+            return sql_response
+        elif isinstance(sql_response, list):
             try:
-                rows = str([dict(row) for row in self.api_response])  # Convert to list of dicts
+                print("sql_response is list. Trying to turn into rows. ")
+                rows = [dict(row) for row in sql_response]  # Convert to list of dicts
+                sql_response = json.dumps(rows, indent=2)
             except TypeError as te:
                 print("TypeError: Likely tried to convert a tuple to dict. Set conn.row_factory = sqlite3.Row.")
                 print(te)
@@ -200,45 +190,40 @@ def sql_query(self):
                 print("General error in row conversion")
                 print(e)
         else:
-            raise 
-        sql_response_str = json.dumps(rows, indent=2)
-        # Append to history
-        self.api_requests_and_responses.append([self.response.function_call.name, self.params, sql_response_str]) #type: ignore
-        self.api_response = sql_response_str
+            raise ValueError(f"sql_response did not return as a list. It was type={type(sql_response)} instead.")
+        
     except Exception as e:
-                error_message = f"""
+        error_message = f"""
         We're having trouble running this SQL query. This
         could be due to an invalid query or the structure 
         of the data. Try rephrasing your question to help 
         the model generate a valid query for the database.
-        """   
+        """
+        sql_response = error_message
+        print(e)
+        return sql_response
 
-    conn.close()
+    return sql_response # type: ignore
+
 
 #########################
 ### template_response ###
 #########################
-def template_response(self):
-    print("IN TEMPLATE RESPONSE")
+def template_response(encoded_response):
     secret_conn = sqlite3.connect(config.priv_db_path)
     secret_cursor = secret_conn.cursor()
-    final_response = self.params["final_response"]
-    self.api_response = final_response # Store api_response as the anonymous version
-    hashes = re.findall(r"\{([st])\{(.*?)\}\}", final_response) #returns a tuple (st, hash)
+    hashes = re.findall(r"\{([st])\{(.*?)\}\}", encoded_response) #returns a tuple (st, hash)
     ## Make a list of names in order of appearance in the final response.
     name_matches = []
     for tag, hash in hashes: 
         if tag == "s":
-            print("FOUND STUDENT TAG")
             students = secret_cursor.execute(
                 f"SELECT StudentFirstName, StudentLastName FROM student_key WHERE student_key.HashStudentID = ?;",
                 (hash,) # has to be passed to sql as a tuple, thus (hash, )
             ).fetchall()
-            print(f"{len(students)} NAMES FOUND")
             for first, last in students:
                 name_matches.append(f'{first} {last}')
         elif tag == "t":
-            print("FOUND TEACHER TAG")
             teachers = secret_cursor.execute(
                 f"SELECT TeacherName FROM teacher_key WHERE HashTeacherName = ?;",
                 (hash,)
@@ -251,6 +236,5 @@ def template_response(self):
     def replace_with_name(match):
         return next(name_iter, match.group(0))
     
-    filled_template = re.sub(r'\{[st]\{.*?\}\}', replace_with_name, final_response)
-    self.api_requests_and_responses.append([self.response.function_call.name, self.params, self.api_response])
+    filled_template = re.sub(r'\{[st]\{.*?\}\}', replace_with_name, encoded_response)
     return filled_template
