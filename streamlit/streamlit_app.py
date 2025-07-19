@@ -29,12 +29,10 @@ with st.expander("Read me", expanded=False):
         This is an AI agent run on OpenAI's "o4-mini" Large Language Model.
         It is connected to the HAAS NWEA testing data for Spring 2024-2025. \n
 
-        The AI accesses **an anonymized version** of the dataset.
-        All personal identifying info (PII) is kept private, even when
-        generating lists of names. Name insertion happens in **a separate and secure
-        final step** to ensure that no PII is uploaded to public servers. \n
+        All data will be output in its encrypted format until the school
+        signs a Data Processing Addendum with a secure cloud storage provider. 
 
-        ⚠️ However, please note: ⚠️ \n
+        ⚠️ Please note ⚠️ \n
         **Any names or id's you enter into the chat field are not protected.**
         Entering any student PII into the user chat box is a violation of FERPA. 
     """

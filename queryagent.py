@@ -43,6 +43,12 @@ class QueryAgent:
             "you will need to use the template_response to de-anonymize names."
             "Format lists of data as tables whenever appropriate."
             "Use double line breaks wherever line breaks are appropriate."
+
+            """
+            When formatting tables for Streamlit output, use GitHub-flavored Markdown with pipe (|) delimiters,
+              a header row, and a separator row (e.g., |---|---|). Do not format tables as plain text or ASCII-style 
+              unless explicitly requested.
+            """
             )
 
         ### Client configuration ###
