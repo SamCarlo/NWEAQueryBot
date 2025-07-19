@@ -76,38 +76,38 @@ openai_tools = [
                 },
                 "strict": True
             },
-            {
-                "type": "function",
-                "name": "template_response",
-                "description": (
-                    "If your final response includes at least one hashed value, "
-                    "use this function to create a structured response "
-                    "so that the program can look up the hashed value(s). "
-                    "IF looking up a teacher name, PLEASE use HashTeacherName col, NOT TeacherID."
-                ),
-                "parameters": {
-                    "type": "object",
-                    "properties": {
-                        "encoded_response": {
-                            "type": "string",
-                            "description": (
-                                "Your final narrative response to the user's question about people, "
-                                "except it includes the literal hashed value(s) in context, as if those values are names. "
-                                "Wrap those values in double curly braces, like this: {s{hash value}}. "
-                                "As you can see, you must include a letter s or t between the first pair "
-                                "of curly braces to indicate whether the person is a teacher or student. "
-                                "Examples: "
-                                "'The students {s{12345}} and {s{67890}} are in cluster 3 for Math 6+.', "
-                                "'The teacher {t{1f999ee01}} is doing well in the cluster analysis for Science 7.', "
-                                "Here are the students in cluster 2 in {t{0912049012}}'s class: {s{a1b2c3d4e5}}, {s{f6g7h8i9j0}}.'"
-                            )
-                        }
-                    },
-                    "required": ["encoded_response"],
-                    "additionalProperties": False
-                },
-                "strict": True
-            }
+            #{
+            #    "type": "function",
+            #    "name": "template_response",
+            #    "description": (
+            #        "If your final response includes at least one hashed value, "
+            #        "use this function to create a structured response "
+            #        "so that the program can look up the hashed value(s). "
+            #        "IF looking up a teacher name, PLEASE use HashTeacherName col, NOT TeacherID."
+            #    ),
+            #    "parameters": {
+            #        "type": "object",
+            #        "properties": {
+            #            "encoded_response": {
+            #                "type": "string",
+            #                "description": (
+            #                    "Your final narrative response to the user's question about people, "
+            #                    "except it includes the literal hashed value(s) in context, as if those values are names. "
+            #                    "Wrap those values in double curly braces, like this: {s{hash value}}. "
+            #                    "As you can see, you must include a letter s or t between the first pair "
+            #                    "of curly braces to indicate whether the person is a teacher or student. "
+            #                    "Examples: "
+            #                    "'The students {s{12345}} and {s{67890}} are in cluster 3 for Math 6+.', "
+            #                    "'The teacher {t{1f999ee01}} is doing well in the cluster analysis for Science 7.', "
+            #                    "Here are the students in cluster 2 in {t{0912049012}}'s class: {s{a1b2c3d4e5}}, {s{f6g7h8i9j0}}.'"
+            #                )
+            #            }
+            #        },
+            #        "required": ["encoded_response"],
+            #        "additionalProperties": False
+            #    },
+            #    "strict": True
+            #}
         ]
 
 
