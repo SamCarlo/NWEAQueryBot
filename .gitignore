@@ -1,6 +1,6 @@
 config.py
 2024-2025_public.db
 __pycache__/
-*.db
+private.db
 .env
 data/spring24-25/

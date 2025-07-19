@@ -3,6 +3,7 @@ import sqlite3
 import json
 import re
 import streamlit as st
+import config
 
 ###########################################
 ## Tool declarations and local functions ##
@@ -11,6 +12,7 @@ import streamlit as st
 ## Purpose: provide functions ready for dispatch by query agent.
 ## Author: Samuel Carlos
 ## Date: 7/15/25
+## NOTE: AS OF 7/18, this streamlit version will only pass the anon.db file, not the private.db file, until legal stuff gets sorted. 
 
 # Tools for OpenAI agents
 openai_tools = [
@@ -210,7 +212,7 @@ def sql_query(db_path: str, query: str) -> str:
 ### template_response ###
 #########################
 def template_response(encoded_response):
-    secret_conn = sqlite3.connect(st.secrets["private.db"])
+    secret_conn = sqlite3.connect(config.anon_db_path)
     secret_cursor = secret_conn.cursor()
     hashes = re.findall(r"\{([st])\{(.*?)\}\}", encoded_response) #returns a tuple (st, hash)
     ## Make a list of names in order of appearance in the final response.
