@@ -7,9 +7,6 @@
 # Author: Samuel Carlos
 
 # type: ignore
-import json
-import dotenv
-import config
 from openai import OpenAI
 import tools
 import streamlit as st
