@@ -2,6 +2,7 @@
 import sqlite3
 import json
 import re
+import streamlit as st
 
 ###########################################
 ## Tool declarations and local functions ##
@@ -209,7 +210,7 @@ def sql_query(db_path: str, query: str) -> str:
 ### template_response ###
 #########################
 def template_response(encoded_response):
-    secret_conn = sqlite3.connect("private.db")
+    secret_conn = sqlite3.connect(st.secrets["private.db"])
     secret_cursor = secret_conn.cursor()
     hashes = re.findall(r"\{([st])\{(.*?)\}\}", encoded_response) #returns a tuple (st, hash)
     ## Make a list of names in order of appearance in the final response.

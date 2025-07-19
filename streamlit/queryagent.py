@@ -21,7 +21,7 @@ import streamlit as st
 class QueryAgent:
     def __init__(self):
         ### API CONNECTION ###
-        api_key = st.secrets("OPENAI_API_KEY")
+        api_key = st.secrets["OPENAI_API_KEY"]
         self.client = OpenAI(api_key=api_key)
 
         ### PROMPT ###
@@ -108,15 +108,15 @@ class QueryAgent:
     def dispatch(self, name, arg=None):
         print("IN DISPATCH")
         if name == "get_schema":
-            sql_response = tools.get_schema(db_path="anon.db")
+            sql_response = tools.get_schema(db_path=st.secrets["anon.db"])
         elif name == "get_table_info":
             print("Chose get_table_info")
             print(f"Args: {arg}")
-            sql_response = tools.get_table_info(db_path="anon.db", table_id=arg)
+            sql_response = tools.get_table_info(db_path=st.secrets["anon.db"], table_id=arg)
         elif name == "sql_query":
             print("Chose sql_query")
             print(f"Args: {arg}")
-            sql_response = tools.sql_query(db_path="anon.db", query=arg)
+            sql_response = tools.sql_query(db_path=st.secrets["anon.db"], query=arg)
         elif name == "template_response":
             print("Chose template_response")
             print(f"Args: {arg}")
