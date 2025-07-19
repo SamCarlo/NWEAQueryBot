@@ -1,7 +1,6 @@
 streamlit
 python-dotenv
 openai
-os
 json
 time
 re
