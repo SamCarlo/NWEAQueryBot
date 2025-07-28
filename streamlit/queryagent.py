@@ -128,6 +128,9 @@ class QueryAgent:
             print("Chose template_response")
             print(f"Args: {arg}")
             sql_response = tools.template_response(encoded_response=arg)
+        else: 
+            print(f"Unknown function: {name}")
+            sql_response = None
 
         return sql_response
 
