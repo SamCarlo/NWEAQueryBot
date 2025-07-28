@@ -1,0 +1,4 @@
+__pycache__/
+private.db
+.env
+data/
