@@ -7,10 +7,12 @@
 # Author: Samuel Carlos
 
 # type: ignore
+import json
+import os
+import dotenv
+import config
 from openai import OpenAI
 import tools
-import streamlit as st
-import config
 
 ### Agent ###
 # States: 
@@ -22,7 +24,8 @@ import config
 class QueryAgent:
     def __init__(self):
         ### API CONNECTION ###
-        api_key = st.secrets["OPENAI_API_KEY"]
+        dotenv.load_dotenv()
+        api_key = os.getenv("OPENAI_API_KEY")
         self.client = OpenAI(api_key=api_key)
 
         ### PROMPT ###
@@ -36,11 +39,11 @@ class QueryAgent:
             "the database by using the functions available to you. Use the info gathered " \
             "to create a clear " \
             "and descriptive answer to the agreed upon goal."\
-            #"The names in the database are redacted, so "\
-            #"you will need to use the template_response to de-anonymize names."
+            "The names in the database are redacted, so "\
+            "you will need to use the template_response to de-anonymize names."
             "Format lists of data as tables whenever appropriate."
-            "Use double line breaks wherever line breaks are appropriate."\
-            
+            "Use double line breaks wherever line breaks are appropriate."
+
             """
             When formatting tables for Streamlit output, use GitHub-flavored Markdown with pipe (|) delimiters,
               a header row, and a separator row (e.g., |---|---|). Do not format tables as plain text or ASCII-style 
@@ -113,7 +116,6 @@ class QueryAgent:
     # param "arg" = the function call argument
     # return = the database's response, cleaned by the local functions already.
     def dispatch(self, name, arg=None):
-        sql_response = None
         print("IN DISPATCH")
         if name == "get_schema":
             sql_response = tools.get_schema(db_path=config.anon_db_path)
@@ -129,9 +131,6 @@ class QueryAgent:
             print("Chose template_response")
             print(f"Args: {arg}")
             sql_response = tools.template_response(encoded_response=arg)
-        else: 
-            print(f"Unknown function: {name}")
-            sql_response = None
 
         return sql_response
 
