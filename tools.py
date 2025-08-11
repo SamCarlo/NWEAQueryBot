@@ -3,6 +3,8 @@ import sqlite3
 import config
 import json
 import re
+import pandas as pd
+from sklearn.cluster import KMeans
 
 ###########################################
 ## Tool declarations and local functions ##
@@ -105,6 +107,23 @@ openai_tools = [
                     "additionalProperties": False
                 },
                 "strict": True
+            },
+            {
+              "type": "function",
+              "name": "clusters",
+              "description": "Runs a cluster analysis on columns matching a pattern in the SQL query result. Returns a markdown table with cluster assignments for each row.",
+              "parameters": {
+                "type": "object",
+                "properties": {
+                  "sql_query": {
+                    "type": "string",
+                    "description": "A SQL query that returns a table with columns: StudentID, Subject, Course, and one or more columns containing 'growth' in their name for cluster analysis."
+                  }
+                },
+                "required": ["sql_query"],
+                "additionalProperties": False
+              },
+              "strict": True
             }
         ]
 
@@ -238,3 +257,51 @@ def template_response(encoded_response):
     
     filled_template = re.sub(r'\{[st]\{.*?\}\}', replace_with_name, encoded_response)
     return filled_template
+
+#######################
+### Cluster Analysis ##
+#######################
+# param sql_query: a query that returns table of studentID | Subject | Course | goalAreaNGrowth
+def clusters(sql_query: str, cluster_pattern: str = "cluster"):
+    secret_conn = sqlite3.connect(config.anon_db_path)
+    secret_cursor = secret_conn.cursor()
+    secret_cursor.execute(sql_query)
+    rows = secret_cursor.fetchall()
+    for r in range(min(5, len(rows))):
+        print(rows[r])
+    # Get column names
+    columns = [desc[0] for desc in secret_cursor.description]
+
+    # Create dataframe
+    df = pd.DataFrame(rows, columns=columns)
+
+    # Select columns for cluster analysis based on pattern
+    cluster_cols = df.filter(like=cluster_pattern).columns
+    print(f"Cluster columns = {cluster_cols}")
+    X = df[cluster_cols]
+
+    # Drop rows with any NaN in clustering columns
+    mask = X.notna().all(axis=1)
+    X = X[mask]
+    df_clean = df[mask].copy()
+
+    # DEBUG
+    print("X shape:", X.shape)
+    print("X head:\n", X.head())
+
+    # Check if X is empty
+    if X.empty:
+        return "No data available for clustering after cleaning NaN values."
+
+    # Perform k-means cluster analysis
+    kmeans = KMeans(n_clusters=3, random_state=42)
+    df_clean['cluster'] = kmeans.fit_predict(X)
+
+    # Convert ID columns to string to avoid scientific notation
+    for col in df_clean.columns:
+        if "id" in col.lower():
+            df_clean[col] = df_clean[col].astype(str)
+
+    # Return cluster table as a string
+    df_text = df_clean.to_markdown(index=False)
+    return df_text

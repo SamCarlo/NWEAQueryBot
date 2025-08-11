@@ -22,3 +22,9 @@
 - Added pandas as requirements.txt for the cluster analysis
 - Added sklearn to requirements.txt
 - Error: numpy depricated version; ran pip install --upgrade scikit-learn
+- Fixed dependency issue by removing and resetting the venv. Also caused an error with renaming the folder part way thru. 
+- Got uploaded to github. 
+- Added tabulate to requirements.txt; was needed for markdown line in cluster_test.
+
+- Cluster test successful. Appending function to tools.py. Writing function declaration. 
+- Push to main.

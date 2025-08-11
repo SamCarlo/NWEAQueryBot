@@ -119,6 +119,7 @@ class QueryAgent:
     # return = the database's response, cleaned by the local functions already.
     def dispatch(self, name, arg=None):
         print("IN DISPATCH")
+        sql_response = None
         if name == "get_schema":
             sql_response = tools.get_schema(db_path=config.anon_db_path)
         elif name == "get_table_info":
