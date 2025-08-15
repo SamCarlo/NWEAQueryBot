@@ -28,3 +28,14 @@
 
 - Cluster test successful. Appending function to tools.py. Writing function declaration. 
 - Push to main.
+- End: 4:00pm with a couple of hours of break
+
+
+# 8/13/25
+Start 8:44am
+- Chrystel just changed the number of weeks for conditional growth calculations from 32 to 26. Should make a difference. 
+- In order to compare, it would be nice to create a "data selection" page on the streamlit--a page that appears before the chat agent. Or a data selection button that restarts the chat if manipulated. 
+- For now, here are just some comparision tables... Downloaded to PastConversations
+- Attempting to fix bug at line 217 of data prep engine: writing over a readonly db. 
+-- Will need to do it later.. will require all functions to be re-written so that the sql connection isn't opened by the __init__ but by each function that uses it. 
+-- Try: just deleting the old db's

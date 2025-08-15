@@ -180,6 +180,7 @@ class DataPrepEngine:
     def redact_db(self):
 
         ### Create a straight db file copy, with titles corresponding to config.py
+        print(f"Attempting to copy")
         shutil.copyfile(config.priv_db_path, config.anon_db_path) # Copies to a new file
         print(f"{config.priv_db_path} copy created: {config.anon_db_path}")
 
@@ -277,7 +278,7 @@ class DataPrepEngine:
 # Results in anon.db and private.db
 def main():
     # Initialize Engine
-    e = DataPrepEngine(fall_folder=config.fall_folder, spring_folder=config.spring_folder)
+    e = DataPrepEngine(fall_folder=config.fall_folder, spring_folder=config.spring_folder_26wk)
 
     # Create dfs
     print("MAIN: Creating df's...")
