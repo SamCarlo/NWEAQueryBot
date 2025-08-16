@@ -141,6 +141,7 @@ class QueryAgent:
             print("Chose template_response")
             print(f"Args: {arg}")
             sql_response = tools.template_response(encoded_response=arg)
+            print(f"SQL RESPONSE FROM TEMPLATE METHOD: {sql_response}")
 
         return sql_response
 

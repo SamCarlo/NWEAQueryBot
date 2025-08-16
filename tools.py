@@ -258,27 +258,35 @@ def template_response(encoded_response):
     # Build dict keys of names:hashvals
     student_key = {}
     teacher_key = {}
-    student_name = ""
-    teacher_name = ""
+
     for v in student_vals:
-        tuple = secret_cursor.execute(
+        row = secret_cursor.execute(
             "SELECT StudentFirstName, StudentLastName FROM student_key WHERE student_key.HashStudentID = ?;",
             (v,)
         ).fetchone()
         
-        if tuple:
-            first, last = tuple
-            student_key[v] = student_name
+        if row:
+            first, last = row
+            student_key[v] = f"{first} {last}"
         else:
             student_key[v] = f"{{s{{{v}}}}}"
 
     for v in teacher_vals:
-        tuple = secret_cursor.execute(
+        row = secret_cursor.execute(
             "SELECT TeacherName FROM teacher_key WHERE HashTeacherName = ?;",
             (v,)
         ).fetchone()
-        teacher_key[v] = (tuple[0] if tuple else f"{{t{{{v}}}}}")
+
+        #select 'Last, First' from tuple "row" using row[0]
+        parts = row[0].split(", ")
+        if len(parts) == 2:
+            last, first = parts
+            teacher_key[v] = (f"{first} {last}")
+        else:
+            teacher_key[v] = row
     
+    secret_conn.close()
+
     #print("student key:")
     #for key, value in student_key.items():
     #    print(f"{key} -> {value}")

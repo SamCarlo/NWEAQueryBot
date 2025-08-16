@@ -59,4 +59,11 @@ Start 10:45am
   - The error was not syntax, though sloppy syntax made it harder to find. The real error was that the anon.db file in the working directory was 1byte for some reason. I re-copied and pasted the .db files from my temporary desktop folder that I used to run the new DataPrepEngine and now it works. 
   - New error: in template_response: "not enough values to unpack (expected 2, got 1)"
   - Fixed by re-writing the whole template_response function. Added notes as comments based on learning. Biggest thing that will take more practice is regex objects. Method to loop over re.Match iterator is clever and I want it to be intuitive in the future. But no need to commit to heart now. 
-  - Updating tools for new template_response method...
+  - Updating tools for new template_response method...Done and uploaded. 
+  - Still has errors in template response behavior. Test and try to fix later. 
+  - End: 6:45pm
+- Start 8:15pm
+- Try to fix the template response... fixed... maybe. Had been updating the name variables incorrectly in template_response. 
+- UPdating changes to tools.py.
+- Fixed 'last, first' in teacher names in template_response.
+- Fixed tuple parsing error in template_response. 
