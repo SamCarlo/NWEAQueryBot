@@ -5,6 +5,7 @@ import json
 import re
 import pandas as pd
 from sklearn.cluster import KMeans
+import os
 
 ###########################################
 ## Tool declarations and local functions ##
@@ -141,9 +142,13 @@ openai_tools = [
 ### get_schema ###
 ##################
 def get_schema(db_path: str) -> str:
+    expected_path = os.path.realpath(os.path.abspath(db_path))
+    print(f"in tools->get_schema ... expected path = {expected_path}")
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
     schema = cursor.execute("SELECT sql FROM sqlite_master WHERE type IN ('table', 'view')").fetchall()
+    print(f"in tools->get_schema ... schema type = {type(schema)}, len = {len(schema)}")
+    sql_response = None
     #print(sql_response)
     _digest_response = []
     for (sql,) in schema: ## This syntax unpacks tuples
@@ -229,34 +234,103 @@ def sql_query(db_path: str, query: str) -> str:
 ### template_response ###
 #########################
 def template_response(encoded_response):
+    # Define Pattern object
+    CAP = re.compile(r'\{([st])\{([^}]+)\}\}')
+
+    # Parse out code blobs from the full string --> Get [(s, 2309hf984), (t, 23fh9h942h9283), ...]
+    hashes = CAP.findall(encoded_response) #returns a tuple (st, hash)
+    # print(f"hashes: \n\n {hashes}\n\n")
+
+    # Sort into types (to avoid N searches -> run max 2 searches {one each for s and t} instead)
+    teacher_vals = []
+    student_vals = []
+    for tag, hashval in hashes:
+        if tag == "t":
+            teacher_vals.append(hashval)
+        elif tag == "s":
+            student_vals.append(hashval)
+    print(teacher_vals)
+    # Create DB connection
     secret_conn = sqlite3.connect(config.priv_db_path)
     secret_cursor = secret_conn.cursor()
-    hashes = re.findall(r"\{([st])\{(.*?)\}\}", encoded_response) #returns a tuple (st, hash)
-    ## Make a list of names in order of appearance in the final response.
-    name_matches = []
-    for tag, hash in hashes: 
-        if tag == "s":
-            students = secret_cursor.execute(
-                f"SELECT StudentFirstName, StudentLastName FROM student_key WHERE student_key.HashStudentID = ?;",
-                (hash,) # has to be passed to sql as a tuple, thus (hash, )
-            ).fetchall()
-            for first, last in students:
-                name_matches.append(f'{first} {last}')
-        elif tag == "t":
-            teachers = secret_cursor.execute(
-                f"SELECT TeacherName FROM teacher_key WHERE HashTeacherName = ?;",
-                (hash,)
-            ).fetchall()
-            for _, teacher_name in teachers:
-                name_matches.append(teacher_name)
+
+    # Run one query for each name type
+    # Build dict keys of names:hashvals
+    student_key = {}
+    teacher_key = {}
+    student_name = ""
+    teacher_name = ""
+    for v in student_vals:
+        tuple = secret_cursor.execute(
+            "SELECT StudentFirstName, StudentLastName FROM student_key WHERE student_key.HashStudentID = ?;",
+            (v,)
+        ).fetchone()
+        
+        if tuple:
+            first, last = tuple
+            student_key[v] = student_name
+        else:
+            student_key[v] = f"{{s{{{v}}}}}"
+
+    for v in teacher_vals:
+        tuple = secret_cursor.execute(
+            "SELECT TeacherName FROM teacher_key WHERE HashTeacherName = ?;",
+            (v,)
+        ).fetchone()
+        teacher_key[v] = (tuple[0] if tuple else f"{{t{{{v}}}}}")
     
-    secret_conn.close()
-    name_iter = iter(name_matches)
-    def replace_with_name(match):
-        return next(name_iter, match.group(0))
+    #print("student key:")
+    #for key, value in student_key.items():
+    #    print(f"{key} -> {value}")
+    #print("Teacher key")
+    #for key, value in teacher_key.items():
+    #    print(f"{key} -> {value}")
     
-    filled_template = re.sub(r'\{[st]\{.*?\}\}', replace_with_name, encoded_response)
-    return filled_template
+    # Update encoded response
+    lookup = {'s': student_key, 't': teacher_key}
+    unknown = {'s': '[unknown student]', 't': '[unknown teacher]'}
+    missing = {'s': [], 't': []}
+    leave_unresolved = False
+
+    # text outside of the {{}} match
+    out = []
+    
+    # pos
+    pos = 0
+
+    #Pattern.finditer() is an iterator of re.Match objects.
+    # A re.Match object contains:
+        # group(0) => a whole regex statement
+        # group(1) => captured group 1 in regex, in this case 's' or 't'
+        # group(2) => captured group 2 in regex, in this case the hash value
+        # group(3) => span: a tuple of indeces showing where in the original string the regex starts and ends. 
+    # a re.Match object also contains methods that make it easy to pull properties like these:
+        # re.Match.start() returns the start index of a whole group
+        # re.Match.end() you can guess
+        # re.Match.span() (start, end) pair
+    for m in CAP.finditer(encoded_response):
+        out.append(encoded_response[pos:m.start()])
+
+        tag, hashval = m.group(1), m.group(2)
+
+        # dict lookup for name given hashval
+        name = lookup[tag].get(hashval)
+
+        if name is None:
+            missing[tag].append(hashval)
+            out.append(m.group(0) if leave_unresolved else unknown[tag])
+        else:
+            out.append(name)
+        
+        pos = m.end() # sets pos to index of char after last match
+    
+    # Tail of text after the last match
+    out.append(encoded_response[pos:])
+
+    # out is a list of string chunks. join them
+    filled_text = "".join(out)
+
+    return filled_text  
 
 #######################
 ### Cluster Analysis ##

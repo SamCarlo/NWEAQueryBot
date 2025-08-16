@@ -190,6 +190,8 @@ if userInput := st.chat_input("Type your question..."):
                         arg = _arg.get("table_id")
                     elif "encoded_response" in _arg:
                         arg = _arg.get("encoded_response")
+                    elif "action" in _arg:
+                        arg = _arg.get("action")
                                             # Now it's a string
                     print(f"Argument cleaned and parsed: {arg}") 
 

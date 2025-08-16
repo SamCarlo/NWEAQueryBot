@@ -194,10 +194,10 @@ class DataPrepEngine:
             elif kine == "s_students":
                 cursor.execute("UPDATE s_students SET StudentFirstName = 'REDACTED'")
                 cursor.execute("UPDATE s_students SET StudentLastName = 'REDACTED'")
-            elif kine == "f_teachers":
-                cursor.execute("UPDATE f_teachers SET TeacherName = 'REDACTED'")
-            elif kine == "s_teachers":
-                cursor.execute("UPDATE s_teachers SET TeacherName = 'REDACTED'")
+            #elif kine == "f_teachers":
+            #    cursor.execute("UPDATE f_teachers SET TeacherName = 'REDACTED'")
+            #elif kine == "s_teachers":
+            #    cursor.execute("UPDATE s_teachers SET TeacherName = 'REDACTED'")
   
         conn.commit()
         conn.close()
@@ -246,8 +246,8 @@ class DataPrepEngine:
         for _, row in key.iterrows():
             cursor.execute(f"""
                 UPDATE {term_}teachers
-                SET TeacherID = ?
-                WHERE TeacherID = ?
+                SET TeacherName = ?
+                WHERE TeacherName = ?
             """, (row['HashTeacherName'], row['TeacherName']))      
         self.anon_db_conn.commit()
 

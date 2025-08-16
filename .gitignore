@@ -4,3 +4,4 @@ venv
 data/
 .env
 private.db
+tools_test.py

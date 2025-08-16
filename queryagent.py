@@ -13,6 +13,7 @@ import dotenv
 import config
 from openai import OpenAI
 import tools
+import traceback
 
 ### Agent ###
 # States: 
@@ -119,9 +120,15 @@ class QueryAgent:
     # return = the database's response, cleaned by the local functions already.
     def dispatch(self, name, arg=None):
         print("IN DISPATCH")
-        sql_response = None
+        sql_response = ""
         if name == "get_schema":
-            sql_response = tools.get_schema(db_path=config.anon_db_path)
+            print("queryagent.py/dispatch(): getting schema...")
+            try:
+                sql_response = tools.get_schema(db_path=config.anon_db_path)
+            except Exception as e:
+                print(f"get_schema failed: {e}")
+                print("Traceback:\n", traceback.format_exc())
+            print(f"queryagent.py/dispatch(): schema = {sql_response}")
         elif name == "get_table_info":
             print("Chose get_table_info")
             print(f"Args: {arg}")
