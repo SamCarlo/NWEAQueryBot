@@ -1,0 +1,6 @@
+data/private.db
+private.db
+.env
+__pycache__/
+*.pyc
+.git/

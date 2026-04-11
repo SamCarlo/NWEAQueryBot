@@ -182,6 +182,7 @@ if userInput := st.chat_input("Type your question..."):
                     _arg = tool_call.arguments
                     _arg = json.loads(_arg) # Now it's a dict
 
+            
                     arg = None
                     if "query" in _arg:
                         arg = _arg.get("query") 
@@ -199,13 +200,13 @@ if userInput := st.chat_input("Type your question..."):
                     print(f"Dispatching {name} with argument {arg}...")
                     sql_response = st.session_state.agent.dispatch(name, arg)
 
-                    # Show arguments
-                    if arg:
-                        _arg_key = next(iter(_arg)) # gets just the first key from the dict object
-                        st_arg = f":material/database: :small[{arg}]"
-                        query_msg = _arg_key + " " + st_arg
-                        with st.chat_message("Actions", avatar="🚀"):
-                            st.markdown(query_msg)
+                    #Show messages (1)
+                    _arg_key = next(iter(_arg)) # gets just the first key from the dict object
+                    st_arg = f":material/database: :small[{arg}]"
+                    query_msg = _arg_key + " " + st_arg
+                    with st.chat_message("Actions", avatar="🚀"):
+                        st.markdown(f"```sql\n{arg}\n```")
+
 
                     # Check for anon output fist
                     if name == "template_response":
