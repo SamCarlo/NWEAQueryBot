@@ -62,8 +62,28 @@ Start 10:45am
   - Updating tools for new template_response method...Done and uploaded. 
   - Still has errors in template response behavior. Test and try to fix later. 
   - End: 6:45pm
+  - 
 - Start 8:15pm
 - Try to fix the template response... fixed... maybe. Had been updating the name variables incorrectly in template_response. 
 - UPdating changes to tools.py.
 - Fixed 'last, first' in teacher names in template_response.
 - Fixed tuple parsing error in template_response. 
+- Fixed ugly backend printing -> clean sql now. 
+Stop 9:00pm
+
+# 8/16/25
+- Start 7:15am
+- Created tables to give overview of calculated subject area growth within a single school year, and grouped by Class (TeacherID). Made them for all grades. 
+- Grouping by teacher ID will be the basis of creating whole-school and teacher reports. 
+- End 8:30am
+
+# 4/10/26
+- Start 8:00pm
+- We are back baby
+- Two and a half semesters of classes have changed my perspective on OOP. 
+- My old data prep engine is so silly. 
+- new goal: follow "Do one thing well" principle in all levels.
+- Created new branch docker-redesign.
+- Wrote dataPrepLite.py, which reduces the engine from over 300 lines to under 60!
+- Goal is to make a simpler chatbot that does not do reverse lookup; just does really fast data analysis. Be able to ask questions like: "How did reading growth stack up across grades this year?"
+- End 11:28pm

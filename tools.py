@@ -82,9 +82,9 @@ openai_tools = [
                 "name": "template_response",
                 "description": (
                     "If your final response includes at least one hashed value, "
-                    "use this function to create a structured response "
+                    "always use this function to create a structured response "
                     "so that the program can look up the hashed value(s). "
-                    "IF looking up a teacher name, PLEASE use HashTeacherName col, NOT TeacherID."
+                    "Always follow the regex format described in the properties of this function."
                 ),
                 "parameters": {
                     "type": "object",
