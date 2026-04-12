@@ -48,7 +48,7 @@ def main():
 
     # Remove Student Names from the dataframes
     print("Removing student PII from dataframes.") 
-    students_df.drop(columns=['StudentFirstName', 
+    students_df = students_df.drop(columns=['StudentFirstName', 
                               'StudentLastName', 
                               'StudentMI', 
                               'Student_StateID', 

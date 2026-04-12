@@ -87,3 +87,10 @@ Stop 9:00pm
 - Wrote dataPrepLite.py, which reduces the engine from over 300 lines to under 60!
 - Goal is to make a simpler chatbot that does not do reverse lookup; just does really fast data analysis. Be able to ask questions like: "How did reading growth stack up across grades this year?"
 - End 11:28pm
+
+# 4/11/26
+- Start 9:30pm
+- Edited data prep lite: now removes PII and illegible ethnicity column. 
+- Cleaned up printout. 
+- Claude coded explorer.py, a dope TUI to explore NWEA data. 
+- End 11:19pm
