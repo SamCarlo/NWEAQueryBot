@@ -74,7 +74,7 @@ openai_tools = [
 # returns           A string containing the schema. 
 def get_schema(db_path: str) -> str:
     conn = sqlite3.connect(db_path)
-    cursor = conn.cursor
+    cursor = conn.cursor()
     schema = cursor.execute("SELECT sql FROM sqlite_master").fetchall()
     return str(schema)
 
@@ -89,9 +89,9 @@ def get_table_info(db_path: str, table_id: str):
     cursor = conn.cursor()
     cursor.execute(f"PRAGMA table_info('{table_id}')") # gets [(0, 'TermName', 'TEXT', 0, None, 0),....
 
-    sql_result = ""
+    sql_response = ""
     for row in cursor.fetchall():
-        sql_result += row[1] + row[2] + "\n" # Appends just the column name and data type
+        sql_response += row[1] + row[2] + "\n" # Appends just the column name and data type
 
     conn.close()
     return sql_response
