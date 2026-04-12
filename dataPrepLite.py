@@ -11,6 +11,7 @@ folder_path = "~/Documents/work/code/nweaAgent/data/26_nwea/"
 results_path = folder_path + "AssessmentResults.csv"
 students_path = folder_path + "StudentsBySchool.csv"
 teachers_path = folder_path + "ClassAssignments.csv"
+output_filename = "anon.db"
 
 # Function to convert csv to dataframe
 # param file    a string for the path to a csv file.
@@ -28,9 +29,11 @@ def hash_id(val: int):
 # Main function to convert csv files into a sqlite3 database.
 def main():
     # Create a sqlite3 connection
-    conn = sqlite3.connect("anon.db")
+    conn = sqlite3.connect(output_filename)
+    print("Making a sqlite connection.")
         
     # Convert all raw csv files into dataframes
+    print("Converting results, students, and teachers csv's to dataframes.")
     results_df = csv_to_df(results_path)
     students_df = csv_to_df(students_path)
     teachers_df = csv_to_df(teachers_path)
@@ -39,10 +42,22 @@ def main():
     df_list = [results_df, students_df, teachers_df]
 
     # Hash the Student ID's of the Dataframes 
+    print("Hashing all student IDs.")
     for df in df_list:
         df["StudentID"] = df["StudentID"].apply(hash_id)
+
+    # Remove Student Names from the dataframes
+    print("Removing student PII from dataframes.") 
+    students_df.drop(columns=['StudentFirstName', 
+                              'StudentLastName', 
+                              'StudentMI', 
+                              'Student_StateID', 
+                              'StudentDateOfBirth', 
+                              'StudentEthnicGroup', 
+                              'Grade'])
     
     # Convert each df to a db 
+    print("Converting all dataframes to sqlite databases.")
     results_df.to_sql(name="results", con=conn, if_exists="replace", index=False) 
     students_df.to_sql(name="students", con=conn, if_exists="replace", index=False) 
     teachers_df.to_sql(name="teachers", con=conn, if_exists="replace", index=False) 
@@ -52,6 +67,7 @@ def main():
     # Close sqlite3 connection
     conn.close()
     print("Connection closed.")
+    print(f"Database now available in {output_filename}.") 
 
 if __name__ == "__main__":
     main()
