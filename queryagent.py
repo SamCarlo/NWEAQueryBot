@@ -60,7 +60,7 @@ def run(user_message, history=None):
 
         # No tool calls means the model is done — return its text response
         if not tool_calls:
-            final_text = next(item.text for item in response.output if item.type == "message")
+            final_text = next(item.content[0].text for item in response.output if item.type == "message")
             history.append({"role": "assistant", "content": final_text})
             return final_text
 
