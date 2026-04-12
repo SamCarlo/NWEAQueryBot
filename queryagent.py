@@ -1,151 +1,79 @@
-## Implements QueryAgent capabilities with OpenAI's API.
-## Holds state: ai messages, user messages, and sql results.
-## Accepts user input
-## Drives a chat loop for sqlite3 querying
+## queryagent.py
+## A barebones OpenAI agent that queries a SQLite database.
+##
+## An agent is a loop that:
+##   1. Sends a message to the model
+##   2. Checks if the model wants to call a tool
+##   3. Runs the tool and sends the result back
+##   4. Repeats until the model gives a final text response
 
-# Date: 7/14/25
-# Author: Samuel Carlos
-
-# type: ignore
-import json
 import os
+import json
 import dotenv
-import config
 from openai import OpenAI
 import tools
-import traceback
+import config
 
-### Agent ###
-# States: 
-# previous_id : holds chat history
-# api_response : holds sqlite3 result
-# client : instance of gpt-4
-# Tools: function declarations (4)
-# params (literal): parameters passed from function call
-class QueryAgent:
-    def __init__(self):
-        ### API CONNECTION ###
-        dotenv.load_dotenv()
-        api_key = os.getenv("OPENAI_API_KEY")
-        self.client = OpenAI(api_key=api_key)
+dotenv.load_dotenv()
 
-        ### PROMPT ###
-        self.instructions = (
-            "SYSTEM INSTRUCTIONS:" \
-            "You have access to a sql database on one school year's worth of " 
-            "standardized testing data. School administrators will need your help " 
-            "to gain insights on that data because they aren't data analysts. " 
-            "Start the conversation by helping the " 
-            "user to set a clear goal for the analysis. Then, start drilling into " 
-            "the database by using the functions available to you. Use the info gathered " 
-            "to create a clear " 
-            "and descriptive answer to the agreed upon goal."
-            "The names in the database are redacted, so "
-            "you will need to use the template_response to de-anonymize names."
-            "Format lists of data as tables whenever appropriate."
-            "Use double line breaks wherever line breaks are appropriate."
-            "Users may refer to the Reading test as Language Arts and vice versa."
-            "Get clarification on reading / language arts from the user it arises in convresation."
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
-            """
-            When formatting tables for Streamlit output, use GitHub-flavored Markdown with pipe (|) delimiters,
-              a header row, and a separator row (e.g., |---|---|). Do not format tables as plain text or ASCII-style 
-              unless explicitly requested.
-            """
-            )
+INSTRUCTIONS = (
+    "You have access to a SQL database of standardized testing data. "
+    "Help school administrators gain insights from the data. "
+    "Start by clarifying the user's goal, then query the database to answer it. "
+    "Format data as GitHub-flavored Markdown tables where appropriate."
+)
 
-        ### Client configuration ###
-        self.my_config = {
-            "model": "o4-mini",
-            "instructions": self.instructions,
-            "parallel_tool_calls": False,
-            "temperature": 1.0,
-            "tools": tools.openai_tools,
-            "tool_choice": "auto",
-            "reasoning": {"effort": "medium"},
-        }
+# 2. Dispatch — maps function names the model calls to actual Python functions
+def dispatch(name, args):
+    if name == "get_schema":
+        return tools.get_schema(db_path=config.anon_db_path)
+    elif name == "get_table_info":
+        return tools.get_table_info(db_path=config.anon_db_path, table_id=args["table_id"])
+    elif name == "sql_query":
+        return tools.sql_query(db_path=config.anon_db_path, query=args["query"])
+    else:
+        return f"Unknown tool: {name}"
 
-        ### PARAMS FROM AI ###
-        # Accessible as response.output[n].arguments
-        self.params = {}
+# 3. Agent loop — drives one full turn of conversation
+# history is a list of prior user/assistant messages shared across turns.
+# It is mutated in place so the caller retains context between calls.
+def run(user_message, history=None):
+    if history is None:
+        history = []
 
-        # Accessible as response.output[n].text
-        self.output_text = ""
+    history.append({"role": "user", "content": user_message})
+    input_messages = list(history)  # start with full conversation history
 
-        #Store previous id from a response
-        self.previous_id = None
+    while True:
+        response = client.responses.create(
+            model="o4-mini",
+            instructions=INSTRUCTIONS,
+            tools=tools.openai_tools,  # 1. Tools defined here
+            input=input_messages,
+            parallel_tool_calls=False,
+            reasoning={"effort": "medium"},
+        )
 
-    
-    ### END OF __INIT__ ###
+        tool_calls = [item for item in response.output if item.type == "function_call"]
 
-    #############################
-    ### Send new chat message ###
-    #############################
+        # No tool calls means the model is done — return its text response
+        if not tool_calls:
+            final_text = next(item.text for item in response.output if item.type == "message")
+            history.append({"role": "assistant", "content": final_text})
+            return final_text
 
-    def send_chat_message(self, input):
-        print("In sent_chat_message")
-        ## Add input text to the configuration for responses.create()
-        self.my_config["input"] = input
+        # 3. Execute each tool the model requested
+        tool_results = []
+        for call in tool_calls:
+            args = json.loads(call.arguments)
+            result = dispatch(call.name, args)
+            tool_results.append({
+                "type": "function_call_output",
+                "call_id": call.call_id,
+                "output": str(result),
+            })
 
-        ### Add dummy function call to satiate model
-        #func_call_found = False
-        #for msg in input:
-        #    for key, value in msg.items():
-        #        if key == "function_call_output":
-        #            func_call_found = True
-        #            continue
-        #if func_call_found == False:
-        #    # dodge 'no tool output' error by forcing no tool call.
-        #    self.my_config["tool_choice"] = "none" 
-
-        ## Check if previous context exists
-        if self.previous_id is None:
-            print("No context yet. Creating response.")
-            response = self.client.responses.create(**self.my_config)
-            self.previous_id = response.id
-        else:
-            #print(f"Context provided. {self.previous_id}")
-            #self.my_config["previous_response_id"] = self.previous_id
-            response = self.client.responses.create(**self.my_config)
-            self.previous_id = response.id
-        print("QueryBot response created. Returning to UI.")
-        return response
-    
-    ##########################
-    ## Dispatch Switchboard ##
-    ##########################
-    # Call only when response.output[-1].type == "function_call"
-    # param "name" = the function call name
-    # param "arg" = the function call argument
-    # return = the database's response, cleaned by the local functions already.
-    def dispatch(self, name, arg=None):
-        print("IN DISPATCH")
-        sql_response = ""
-        if name == "get_schema":
-            print("queryagent.py/dispatch(): getting schema...")
-            try:
-                sql_response = tools.get_schema(db_path=config.anon_db_path)
-            except Exception as e:
-                print(f"get_schema failed: {e}")
-                print("Traceback:\n", traceback.format_exc())
-            print(f"queryagent.py/dispatch(): schema = {sql_response}")
-        elif name == "get_table_info":
-            print("Chose get_table_info")
-            print(f"Args: {arg}")
-            sql_response = tools.get_table_info(db_path=config.anon_db_path, table_id=arg)
-        elif name == "sql_query":
-            print("Chose sql_query")
-            print(f"Args: {arg}")
-            sql_response = tools.sql_query(db_path=config.anon_db_path, query=arg)
-        elif name == "template_response":
-            print("Chose template_response")
-            print(f"Args: {arg}")
-            sql_response = tools.template_response(encoded_response=arg)
-            print(f"SQL RESPONSE FROM TEMPLATE METHOD: {sql_response}")
-
-        return sql_response
-
-
-
-
-        
+        # 4. Feed tool results back in for the next iteration
+        input_messages = list(response.output) + tool_results

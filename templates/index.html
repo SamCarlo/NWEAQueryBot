@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HAAS NWEA Agent</title>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #0d0d0d;
+            color: #ffb000;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 14px;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        #header {
+            padding: 10px 20px;
+            border-bottom: 1px solid #443300;
+            color: #664400;
+            font-size: 12px;
+            letter-spacing: 1px;
+        }
+
+        #terminal {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+        }
+
+        #terminal::-webkit-scrollbar { width: 6px; }
+        #terminal::-webkit-scrollbar-track { background: #0d0d0d; }
+        #terminal::-webkit-scrollbar-thumb { background: #443300; }
+
+        .line {
+            margin-bottom: 2px;
+            white-space: pre-wrap;
+            word-break: break-word;
+            line-height: 1.6;
+        }
+
+        .system { color: #664400; }
+        .prompt  { color: #ffb000; }
+        .response { color: #cc8800; margin: 8px 0 20px 0; }
+
+        /* Markdown elements inside .response */
+        .response p  { margin-bottom: 8px; }
+        .response strong { color: #ffb000; }
+
+        .response table {
+            border-collapse: collapse;
+            margin: 8px 0;
+        }
+        .response th,
+        .response td {
+            border: 1px solid #664400;
+            padding: 3px 12px;
+            text-align: left;
+        }
+        .response th { color: #ffb000; }
+
+        .response code {
+            background: #1a1100;
+            padding: 1px 4px;
+            border-radius: 2px;
+        }
+
+        .response pre {
+            background: #1a1100;
+            padding: 10px;
+            margin: 8px 0;
+            overflow-x: auto;
+        }
+
+        @keyframes blink { 50% { opacity: 0; } }
+        .thinking {
+            color: #664400;
+            animation: blink 1s step-end infinite;
+        }
+
+        #input-line {
+            display: flex;
+            align-items: center;
+            padding: 10px 20px;
+            border-top: 1px solid #443300;
+        }
+
+        #prompt-label {
+            color: #ffb000;
+            margin-right: 8px;
+            white-space: nowrap;
+            user-select: none;
+        }
+
+        #user-input {
+            background: transparent;
+            border: none;
+            outline: none;
+            color: #ffb000;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 14px;
+            flex: 1;
+            caret-color: #ffb000;
+        }
+
+        #user-input:disabled { opacity: 0.4; }
+    </style>
+</head>
+<body>
+
+<div id="header">
+    HAAS NWEA DATA AGENT &nbsp;|&nbsp; Spring 2024-2025 &nbsp;|&nbsp; model: o4-mini
+</div>
+
+<div id="terminal">
+    <div id="output">
+        <div class="line system">Connected to anon.db</div>
+        <div class="line system">Tools: get_schema | get_table_info | sql_query</div>
+        <div class="line">&nbsp;</div>
+        <div class="line system">Sample prompts:</div>
+        <div class="line system">  &gt; What's in this database?</div>
+        <div class="line system">  &gt; Which 6th graders struggled most in reading?</div>
+        <div class="line system">  &gt; Compare math growth across grade levels.</div>
+        <div class="line system">  &gt; Who showed the most improvement from fall to spring?</div>
+        <div class="line system">  &gt; Summarize 8th grade science performance.</div>
+        <div class="line">&nbsp;</div>
+        <div class="line system">WARNING: Do not enter student names or IDs into the chat. FERPA applies.</div>
+        <div class="line">&nbsp;</div>
+    </div>
+</div>
+
+<div id="input-line">
+    <span id="prompt-label">teacher@haas:~$</span>
+    <input type="text" id="user-input" autofocus autocomplete="off" spellcheck="false" />
+</div>
+
+<script>
+    const output   = document.getElementById('output');
+    const terminal = document.getElementById('terminal');
+    const input    = document.getElementById('user-input');
+
+    function scroll() {
+        terminal.scrollTop = terminal.scrollHeight;
+    }
+
+    function appendRaw(text, cls) {
+        const div = document.createElement('div');
+        div.className = 'line ' + (cls || '');
+        div.textContent = text;
+        output.appendChild(div);
+        scroll();
+        return div;
+    }
+
+    function appendHTML(html, cls) {
+        const div = document.createElement('div');
+        div.className = 'line ' + (cls || '');
+        div.innerHTML = html;
+        output.appendChild(div);
+        scroll();
+        return div;
+    }
+
+    async function sendMessage(message) {
+        appendRaw('teacher@haas:~$ ' + message, 'prompt');
+
+        const thinking = appendRaw('[ thinking... ]', 'thinking');
+        input.disabled = true;
+
+        try {
+            const res = await fetch('/chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ message }),
+            });
+
+            const data = await res.json();
+            thinking.remove();
+
+            if (data.error) {
+                appendRaw('[ error: ' + data.error + ' ]', 'system');
+            } else {
+                appendHTML(marked.parse(data.response), 'response');
+            }
+
+        } catch (err) {
+            thinking.remove();
+            appendRaw('[ connection error: ' + err.message + ' ]', 'system');
+        }
+
+        input.disabled = false;
+        input.focus();
+        scroll();
+    }
+
+    input.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && input.value.trim() && !input.disabled) {
+            const message = input.value.trim();
+            input.value = '';
+            sendMessage(message);
+        }
+    });
+
+    scroll();
+</script>
+
+</body>
+</html>
