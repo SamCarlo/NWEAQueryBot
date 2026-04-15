@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""NWEA anon.db explorer — RIT scores with sub-goals and Fall-to-Fall growth."""
+"""NWEA anon.db explorer — RIT scores with sub-goals and Fall-to-Winter growth."""
 
 import sqlite3
 from textual.app import App, ComposeResult
@@ -97,9 +97,9 @@ def get_growth(grade: str, teacher: str = ALL_TEACHERS):
         f"""
         SELECT
             r.Subject,
-            ROUND(AVG(r.FallToFallObservedGrowth),  2),
-            ROUND(AVG(r.FallToFallProjectedGrowth), 2),
-            ROUND(AVG(r.TypicalFallToFallGrowth),   2)
+            ROUND(AVG(r.FallToWinterObservedGrowth),  2),
+            ROUND(AVG(r.FallToWinterProjectedGrowth), 2),
+            ROUND(AVG(r.TypicalFallToWinterGrowth),   2)
         FROM results r
         JOIN students s ON r.StudentID = s.StudentID
         WHERE s.NWEAStandard_Grade = ? {clause}
@@ -172,7 +172,7 @@ def build_growth_panel(grade: str, teacher: str = ALL_TEACHERS) -> Text:
         return t
 
     title = f"Grade {grade}" + (f"  —  {teacher}" if teacher != ALL_TEACHERS else "")
-    t.append(f"\n  {title}  —  Fall → Fall Growth\n\n", style="bold white")
+    t.append(f"\n  {title}  —  Fall → Winter Growth\n\n", style="bold white")
 
     growth_rows = [
         ("Observed",  "white"),
