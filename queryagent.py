@@ -21,8 +21,13 @@ client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 INSTRUCTIONS = (
     "You have access to a SQL database of standardized testing data. "
     "Help school administrators gain insights from the data. "
-    "Start by clarifying the user's goal, then query the database to answer it. "
-    "Format data as GitHub-flavored Markdown tables where appropriate."
+    "For every user question, follow these steps in order:\n"
+    "  1. Call get_schema to see all available tables.\n"
+    "  2. Call get_table_info on any relevant tables to understand their columns.\n"
+    "  3. Write and run sql_query calls as needed to answer the question.\n"
+    "Do not skip steps or ask the user clarifying questions. "
+    "Make reasonable assumptions and go straight to querying. "
+    "Format results as GitHub-flavored Markdown tables where appropriate."
 )
 
 # 2. Dispatch — maps function names the model calls to actual Python functions
@@ -36,38 +41,41 @@ def dispatch(name, args):
     else:
         return f"Unknown tool: {name}"
 
-# 3. Agent loop — drives one full turn of conversation
-# history is a list of prior user/assistant messages shared across turns.
-# It is mutated in place so the caller retains context between calls.
+# 3. Agent loop — generator that yields ("sql", query) for each SQL query run,
+# then yields ("response", final_text) when done.
+# history is mutated in place so the caller retains context between turns.
 def run(user_message, history=None):
     if history is None:
         history = []
 
     history.append({"role": "user", "content": user_message})
-    input_messages = list(history)  # start with full conversation history
+    input_messages = list(history)
 
     while True:
         response = client.responses.create(
             model="o4-mini",
             instructions=INSTRUCTIONS,
-            tools=tools.openai_tools,  # 1. Tools defined here
+            tools=tools.openai_tools,
             input=input_messages,
             parallel_tool_calls=False,
-            reasoning={"effort": "medium"},
+            reasoning={"effort": "high"},
         )
 
         tool_calls = [item for item in response.output if item.type == "function_call"]
 
-        # No tool calls means the model is done — return its text response
+        # No tool calls means the model is done — yield the final response
         if not tool_calls:
             final_text = next(item.content[0].text for item in response.output if item.type == "message")
             history.append({"role": "assistant", "content": final_text})
-            return final_text
+            yield "response", final_text
+            return
 
-        # 3. Execute each tool the model requested
+        # Execute each tool and yield SQL queries as they happen
         tool_results = []
         for call in tool_calls:
             args = json.loads(call.arguments)
+            if call.name == "sql_query":
+                yield "sql", args["query"]
             result = dispatch(call.name, args)
             tool_results.append({
                 "type": "function_call_output",
@@ -75,5 +83,5 @@ def run(user_message, history=None):
                 "output": str(result),
             })
 
-        # 4. Feed tool results back in for the next iteration
-        input_messages = list(response.output) + tool_results
+        # Feed tool results back in, keeping full history as prefix
+        input_messages = input_messages + list(response.output) + tool_results

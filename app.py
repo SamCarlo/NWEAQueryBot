@@ -1,33 +1,43 @@
 ## app.py
-## Flask server for the HAAS NWEA Data Agent.
-## Serves the terminal UI and routes chat messages to queryagent.
+## Streamlit chat UI for the HAAS NWEA Data Agent.
 
-from flask import Flask, request, jsonify, render_template
+import streamlit as st
 import queryagent
 
-app = Flask(__name__)
+st.title("NWEA Data Agent")
 
-# Conversation history persists for the lifetime of the server process.
-# Each entry is a user/assistant message dict; tool call internals are
-# tracked inside queryagent.run() and not stored here.
-conversation_history = []
+if "history" not in st.session_state:
+    st.session_state.history = []
+if "messages" not in st.session_state:
+    # Each entry: {role, content, sql_queries}
+    st.session_state.messages = []
 
-@app.route('/')
-def index():
-    return render_template('index.html')
+# Render existing chat history
+for msg in st.session_state.messages:
+    with st.chat_message(msg["role"]):
+        for query in msg.get("sql_queries", []):
+            st.code(query, language="sql")
+        st.markdown(msg["content"])
 
-@app.route('/chat', methods=['POST'])
-def chat():
-    user_message = request.json.get('message', '').strip()
-    if not user_message:
-        return jsonify({'error': 'No message provided.'}), 400
-    try:
-        response = queryagent.run(user_message, conversation_history)
-        return jsonify({'response': response})
-    except Exception as e:
-        import traceback
-        traceback.print_exc()
-        return jsonify({'error': str(e)}), 500
+# Chat input
+if prompt := st.chat_input("Ask about the data..."):
+    st.session_state.messages.append({"role": "user", "content": prompt})
+    with st.chat_message("user"):
+        st.markdown(prompt)
 
-if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    with st.chat_message("assistant"):
+        sql_queries = []
+        response_text = None
+        for event_type, content in queryagent.run(prompt, st.session_state.history):
+            if event_type == "sql":
+                st.code(content, language="sql")
+                sql_queries.append(content)
+            elif event_type == "response":
+                response_text = content
+                st.markdown(content)
+
+    st.session_state.messages.append({
+        "role": "assistant",
+        "content": response_text,
+        "sql_queries": sql_queries,
+    })
