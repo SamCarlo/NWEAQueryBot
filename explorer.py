@@ -141,7 +141,7 @@ def build_rit_panel(grade: str, teacher: str = ALL_TEACHERS) -> Text:
         gc = GOAL_COLORS.get(subject, "grey50")
 
         t.append(f"  {subject}\n", style=f"bold {sc}")
-        t.append(f"  {'Overall':<22} ", style="white")
+        t.append(f"  {'Overall':<23} ", style="white")
         t.append("█" * _rit_bar(avg_rit, RIT_BAR), style=sc)
         t.append(f"  {avg_rit}", style=f"bold {sc}")
         t.append(f"  n={count}\n", style="dim")
