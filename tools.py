@@ -1,6 +1,7 @@
 ## A non-OOP version of the 4-function chat agent
 ## From https://openai.com/business/guides-and-resources/a-practical-guide-to-building-ai-agents/
 
+import sqlite3
 
 # 1. Define a list of callable tools
 openai_tools = [
