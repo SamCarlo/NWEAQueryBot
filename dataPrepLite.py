@@ -5,9 +5,10 @@
 import pandas as pd 
 import sqlite3 
 import hashlib
+import sys
 
 # Folder paths containing the complete NWEA folder contents. 
-folder_path = "~/Documents/work/code/nweaAgent/data/26_nwea/"
+folder_path = sys.argv[1]
 results_path = folder_path + "AssessmentResults.csv"
 students_path = folder_path + "StudentsBySchool.csv"
 teachers_path = folder_path + "ClassAssignments.csv"
