@@ -11,8 +11,12 @@ NWEA Data Agent allows non-technical users to browse an anonymized student testi
 ### Features
 - Model: ChatGPT 5.4 Mini 
 - The AI model accesses the database using SQLite3 language. 
-- Under the hood, the AI can access four tools for data exploration: 
-  -- **get_schema**: Read the names of all the tables and their various columns.
-  -- **get_table_info**: Look into the data types contained by each column. 
-  -- **sql_query**: Dig into the database using the SQLite language. 
+- Under the hood, the AI can access four tools for data exploration:
+
+    **get_schema**: Read the names of all the tables and their various columns.
+
+    **get_table_info**: Look into the data types contained by each column. 
+
+    **sql_query**: Dig into the database using the SQLite language. 
+
   Therefore, there is very low chance of hallucination; the answers to user questions come directly from values in the NWEA score database. 
