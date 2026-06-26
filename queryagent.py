@@ -53,12 +53,12 @@ def run(user_message, history=None):
 
     while True:
         response = client.responses.create(
-            model="o4-mini",
+            model="gpt-5.4-mini",
             instructions=INSTRUCTIONS,
             tools=tools.openai_tools,
             input=input_messages,
             parallel_tool_calls=False,
-            reasoning={"effort": "high"},
+            reasoning={"effort": "low"},
         )
 
         tool_calls = [item for item in response.output if item.type == "function_call"]
