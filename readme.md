@@ -1,4 +1,4 @@
-https://github.com/user-attachments/assets/ec0c2e83-73ce-42e3-99bb-6e5267e3590d
+https://github.com/user-attachments/assets/f7eb574b-4877-4e6e-b08e-7ad389c14e58
 
 # NWEA Data Agent
 ## Branch: gpt-5.4-mini
