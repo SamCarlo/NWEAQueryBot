@@ -1,8 +1,6 @@
 https://github.com/user-attachments/assets/f7eb574b-4877-4e6e-b08e-7ad389c14e58
 
 # NWEA Data Agent
-## Branch: gpt-5.4-mini
-
 ### Description
 Chat in natural language with our school's database, rather than spending hours creating new tables in excel for one-off analyses. 
 
