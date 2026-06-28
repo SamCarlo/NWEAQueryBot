@@ -4,6 +4,7 @@
 import streamlit as st
 import queryagent
 
+# Title 
 st.title("NWEA Data Agent")
 
 if "history" not in st.session_state:
@@ -11,6 +12,20 @@ if "history" not in st.session_state:
 if "messages" not in st.session_state:
     # Each entry: {role, content, sql_queries}
     st.session_state.messages = []
+
+# Instructions
+st.info("""
+### Welcome to the HAAS NWEA Testing Data Query App.
+This is a tool to explore anonymous school testing data in plain English. 
+
+**Current database: Winter SY 2025-2026**
+**Last software update: 6/27/26**
+
+Here are some starting prompts that you can copy/paste into the chat box to see it in action:
+- What are the most vulnerable demographics between grades 6-10 in math? 
+- Are there any sub-areas within Reading that are consistently low across all grades? 
+- What are the academic strengths of each grade level? """,
+        icon="💫")
 
 # Render existing chat history
 for msg in st.session_state.messages:
