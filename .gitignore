@@ -1,4 +1,7 @@
 __pycache__
+journal.md
+dataPrepLite.py
+DockerFile
 venv
 .DS_Store
 data/
