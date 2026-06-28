@@ -2,6 +2,8 @@ __pycache__
 journal.md
 dataPrepLite.py
 DockerFile
+.devcontainer
+.dockerignore
 venv
 .DS_Store
 data/
