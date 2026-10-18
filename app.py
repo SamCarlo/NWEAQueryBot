@@ -18,8 +18,8 @@ st.info("""
 ### Welcome to the HAAS NWEA Testing Data Query App.
 This is a tool to explore anonymous school testing data in plain English. 
 
-**Current database: Winter SY 2025-2026**
-**Last software update: 6/27/26**
+**Current database: Fall SY 2026-2027**
+**Last software update: 10/17/26**
 
 Here are some starting prompts that you can copy/paste into the chat box to see it in action:
 - What are the most vulnerable demographics between grades 6-10 in math? 
